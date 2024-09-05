@@ -16,6 +16,8 @@ saques = []
 extrato = ""
 numero_saques_diarios = 0
 LIMITE_SAQUES_DIARIOS = 3
+numero_transacoes_diarias = 0
+LIMITE_TRANSACOES_DIARIAS = 10
 
 # Operação de depósito
 
@@ -24,17 +26,22 @@ LIMITE_SAQUES_DIARIOS = 3
 
 def operacao_deposito():
     global saldo
+    global numero_transacoes_diarias
 
     valor_deposito = float(input("Digite o valor do depósito: "))
 
     is_deposito_positivo = valor_deposito > 0
+    has_limite_transacao_diaria = numero_transacoes_diarias < LIMITE_TRANSACOES_DIARIAS
 
-    if is_deposito_positivo:
+    if is_deposito_positivo and has_limite_transacao_diaria:
         saldo += valor_deposito
+        numero_transacoes_diarias += 1
         depositos.append({"valor": valor_deposito, "data": datetime.datetime.now().replace(microsecond=0)})
         print(f"Depósito de R$ {valor_deposito:.2f} realizado com sucesso.")
-    else:
+    elif not is_deposito_positivo:
         print("Valor inválido, tente novamente.")
+    elif not has_limite_transacao_diaria:
+        print("Limite diário de transações excedido.")
 
 # Operação de saque
 
@@ -48,6 +55,7 @@ def operacao_saque():
     global saldo
     global numero_saques_diarios
     global saques
+    global numero_transacoes_diarias
 
     if numero_saques_diarios >= LIMITE_SAQUES_DIARIOS:
         print("Limite diário de saques excedido.")
@@ -63,16 +71,20 @@ def operacao_saque():
 
     is_saque_menor_que_saldo = valor_saque <= saldo
     is_saque_menor_que_limite_diario = valor_saque <= LIMITE_DIARIO_SAQUE
+    has_limite_transacao_diaria = numero_transacoes_diarias < LIMITE_TRANSACOES_DIARIAS
 
-    if is_saque_menor_que_saldo and is_saque_menor_que_limite_diario:
+    if is_saque_menor_que_saldo and is_saque_menor_que_limite_diario and has_limite_transacao_diaria:
         saldo -= valor_saque
         numero_saques_diarios += 1
+        numero_transacoes_diarias += 1
         saques.append({"valor": valor_saque, "data": datetime.datetime.now().replace(microsecond=0)})
         print(f"Saque de R$ {valor_saque:.2f} realizado com sucesso.")
     elif not is_saque_menor_que_saldo:
         print("Saldo insuficiente.")
     elif not is_saque_menor_que_limite_diario:
         print("Limite diário de saques excedido.")
+    elif not has_limite_transacao_diaria:
+        print("Limite diário de transações excedido.")
 
 # Operação de extrato
 
